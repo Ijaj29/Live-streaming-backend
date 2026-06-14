@@ -3,9 +3,7 @@ import {
   MessageBody, ConnectedSocket, OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { StreamChat } from './entities/stream-chat.entity';
+import { StreamService } from './stream.service';
 
 @WebSocketGateway({
   cors: { origin: process.env.FRONTEND_URL, credentials: true },
@@ -16,10 +14,7 @@ export class StreamGateway implements OnGatewayDisconnect {
   // Track socket → { streamId, userId } for disconnect cleanup
   private socketMap = new Map<string, { streamId: number; userId: number }>();
 
-  constructor(
-    @InjectRepository(StreamChat)
-    private chatRepo: Repository<StreamChat>,
-  ) {}
+  constructor(private streamService: StreamService) {}
 
   @SubscribeMessage('joinStream')
   async handleJoin(
@@ -35,11 +30,7 @@ export class StreamGateway implements OnGatewayDisconnect {
     this.server.to(room).emit('viewerCount', { count });
 
     // Send last 50 messages to new joiner
-    const history = await this.chatRepo.find({
-      where: { streamId: data.streamId },
-      order: { createdAt: 'DESC' },
-      take: 50,
-    });
+    const history = await this.streamService.getChatHistory(data.streamId, 50);
     client.emit('chatHistory', history.reverse());
   }
 
@@ -50,13 +41,12 @@ export class StreamGateway implements OnGatewayDisconnect {
   ) {
     if (!data.message?.trim()) return;
 
-    const chat = this.chatRepo.create({
+    const saved = await this.streamService.createChatMessage({
       streamId: data.streamId,
       userId: data.userId,
       username: data.username,
       message: data.message.trim(),
     });
-    const saved = await this.chatRepo.save(chat);
 
     this.server.to(`stream-${data.streamId}`).emit('newMessage', {
       id: saved.id,
