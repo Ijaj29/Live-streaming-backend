@@ -15,10 +15,15 @@ import { User } from '../entities/user.entity';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        secret: configService.getOrThrow<string>('JWT_SECRET'),
-        signOptions: { expiresIn: '2h' },
-      }),
+      useFactory: (configService: ConfigService) => {
+        const secret =
+          configService.get<string>('JWT_SECRET') ?? process.env.JWT_SECRET ?? 'dev_jwt_secret';
+
+        return {
+          secret,
+          signOptions: { expiresIn: '2h' },
+        };
+      },
     }),
     TypeOrmModule.forFeature([User]),
   ],
