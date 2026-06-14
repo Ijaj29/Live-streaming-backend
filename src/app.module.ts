@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CloudflareModule } from './cloudflare/cloudflare.module';
 import { StreamModule } from './stream/stream.module';
+import { AuthModule } from './auth/auth.module';
 import { databaseConfig } from './config/database.config';
 
 
@@ -14,6 +15,7 @@ import { databaseConfig } from './config/database.config';
       isGlobal: true,
     }),
     TypeOrmModule.forRoot(databaseConfig),
+    AuthModule,
     CloudflareModule,
     StreamModule,
   ],
