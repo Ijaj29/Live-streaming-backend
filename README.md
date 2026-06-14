@@ -31,6 +31,35 @@
 $ npm install
 ```
 
+Note: Docker integration has been removed from this repository. The project now expects a local or remote MySQL instance.
+
+## Local development (MySQL)
+
+1. Install and start MySQL on your machine (Ubuntu example):
+
+```bash
+sudo apt update
+sudo apt install mysql-server
+sudo systemctl start mysql
+```
+
+2. Ensure `.env` contains correct DB settings (use `localhost` for `DB_HOST`):
+
+```
+DB_HOST=localhost
+DB_PORT=3306
+DB_USERNAME=root
+DB_PASSWORD=your_password
+DB_NAME=live_streaming
+```
+
+3. Install dependencies and run in dev mode:
+
+```bash
+npm install
+npm run start:dev
+```
+
 ## Compile and run the project
 
 ```bash
