@@ -22,7 +22,7 @@ export class CloudflareService {
         };
     }
 
-    async createLiveInput(title: string, adminUserId: number) {
+    async createLiveInput(title: string, adminUserId?: number) {
         const response = await axios.post(
             `${this.baseUrl}/live_inputs`,
             {
@@ -42,7 +42,7 @@ export class CloudflareService {
             cfStreamKey: input.uid,
             title,
             status: 'idle',
-            createdBy: adminUserId,
+            createdBy: adminUserId ?? 0,
         });
         await this.streamRepo.save(stream);
 
