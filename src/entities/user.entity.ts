@@ -10,23 +10,23 @@ import {
 @Unique(['email'])
 export class User {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column()
-  name: string;
+  name!: string;
 
   @Column()
-  email: string;
+  email!: string;
 
   @Column()
-  password: string;
+  password!: string;
 
   @Column({ default: 'user' })
-  role: string;
+  role!: string;
 
   @Column({ name: 'is_admin', default: false })
-  isAdmin: boolean;
+  isAdmin!: boolean;
 
   @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
+  createdAt!: Date;
 }
