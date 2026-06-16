@@ -11,11 +11,10 @@ import * as crypto from 'crypto';
 export class StreamController {
     constructor(private readonly cfService: CloudflareService) { }
 
-    // Admin: create a new live input / channel
+    // Create a new live input / channel
     @Post('create')
-    @UseGuards(AdminGuard)
-    async create(@Body() body: { title: string }, @Req() req) {
-        return this.cfService.createLiveInput(body.title, req.user.id);
+    async create(@Body() body: { title: string }) {
+        return this.cfService.createLiveInput(body.title);
     }
 
     // Viewer: get signed token to watch
