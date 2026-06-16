@@ -54,6 +54,10 @@ export class AuthService {
     };
   }
 
+  async findUserById(id: number): Promise<User | null> {
+    return this.usersRepository.findOne({ where: { id } });
+  }
+
   private signToken(user: User): string {
     return this.jwtService.sign({
       sub: user.id,

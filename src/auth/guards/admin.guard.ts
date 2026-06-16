@@ -1,20 +1,14 @@
 import { Injectable, ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { JwtAuthGuard } from './jwt.guard';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { User } from '../../entities/user.entity';
+import { AuthService } from '../auth.service';
 
 @Injectable()
 export class AdminGuard extends JwtAuthGuard {
-  constructor(
-    @InjectRepository(User)
-    private readonly usersRepository: Repository<User>,
-  ) {
+  constructor(private readonly authService: AuthService) {
     super();
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    // First run JWT validation
     await super.canActivate(context);
 
     const request = context.switchToHttp().getRequest();
@@ -24,8 +18,7 @@ export class AdminGuard extends JwtAuthGuard {
       throw new ForbiddenException('No user found');
     }
 
-    // Fetch fresh user from DB to ensure up-to-date role/isAdmin
-    const user = await this.usersRepository.findOne({ where: { id: tokenUser.id } });
+    const user = await this.authService.findUserById(tokenUser.id);
     if (!user) {
       throw new ForbiddenException('User not found');
     }
@@ -34,7 +27,6 @@ export class AdminGuard extends JwtAuthGuard {
       throw new ForbiddenException('Admin access required');
     }
 
-    // attach full user to request
     request.user = {
       id: user.id,
       email: user.email,
