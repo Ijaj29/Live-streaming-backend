@@ -22,36 +22,74 @@ export class CloudflareService {
         };
     }
 
+    // async createLiveInput(title: string, adminUserId?: number) {
+    //     const response = await axios.post(
+    //         `${this.baseUrl}/live_inputs`,
+    //         {
+    //             meta: { name: title },
+    //             recording: {
+    //                 mode: 'automatic',
+    //                 requireSignedURLs: true,
+    //                 allowedOrigins: [this.configService.get('FRONTEND_URL')],
+    //             },
+    //         },
+    //         { headers: this.headers },
+    //     );
+
+    //     const input = response.data.result;
+
+    //     const stream = this.streamRepo.create({
+    //         cfStreamKey: input.uid,
+    //         title,
+    //         status: 'idle',
+    //         createdBy: adminUserId ?? 0,
+    //     });
+    //     await this.streamRepo.save(stream);
+
+    //     return {
+    //         dbId: stream.id,
+    //         streamKey: input.uid,
+    //         rtmpUrl: input.rtmps.url,
+    //         rtmpStreamKey: input.rtmps.streamKey,
+    //     };
+    // }
+
     async createLiveInput(title: string, adminUserId?: number) {
-        const response = await axios.post(
-            `${this.baseUrl}/live_inputs`,
-            {
-                meta: { name: title },
-                recording: {
-                    mode: 'automatic',
-                    requireSignedURLs: true,
-                    allowedOrigins: [this.configService.get('FRONTEND_URL')],
+        try {
+            const response = await axios.post(
+                `${this.baseUrl}/live_inputs`,
+                {
+                    meta: { name: title },
+                    recording: {
+                        mode: 'automatic',
+                        requireSignedURLs: true,
+                        allowedOrigins: [this.configService.get('FRONTEND_URL')],
+                    },
                 },
-            },
-            { headers: this.headers },
-        );
+                { headers: this.headers },
+            );
 
-        const input = response.data.result;
+            const input = response.data.result;
 
-        const stream = this.streamRepo.create({
-            cfStreamKey: input.uid,
-            title,
-            status: 'idle',
-            createdBy: adminUserId ?? 0,
-        });
-        await this.streamRepo.save(stream);
+            const stream = this.streamRepo.create({
+                cfStreamKey: input.uid,
+                title,
+                status: 'idle',
+                createdBy: adminUserId ?? 0,
+            });
+            await this.streamRepo.save(stream);
 
-        return {
-            dbId: stream.id,
-            streamKey: input.uid,
-            rtmpUrl: input.rtmps.url,
-            rtmpStreamKey: input.rtmps.streamKey,
-        };
+            return {
+                dbId: stream.id,
+                streamKey: input.uid,
+                rtmpUrl: input.rtmps.url,
+                rtmpStreamKey: input.rtmps.streamKey,
+            };
+        } catch (err: any) {
+            // Cloudflare's real complaint lives here
+            console.error('CF live_input error:', err.response?.status, JSON.stringify(err.response?.data, null, 2));
+            throw err;
+        }
     }
 
     async getSignedPlaybackToken(streamId: number, userId: number): Promise<string> {
